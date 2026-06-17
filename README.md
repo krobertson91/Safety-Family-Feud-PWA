@@ -9,7 +9,7 @@ Open the shared GitHub Pages version:
 https://krobertson91.github.io/Safety-Family-Feud-PWA/
 
 Each person's questions and edits save in their own browser. Use **Export Active Game** to back up or share a game pack.
-Use **Print Cue Cards** to print one 4x6 host card per round.
+Use **Print Cue Cards** to preview and print one landscape 4x6 host card per round, or save the print preview as a PDF.
 
 ## Event Host Checklist
 
@@ -31,7 +31,7 @@ Use **Print Cue Cards** to print one 4x6 host card per round.
 
 3. Use **New Game**, **Duplicate**, **Edit Questions**, **Import Game Pack**, and **Export Active Game** from the start screen to manage each event's questions.
 
-4. Use **Print Cue Cards** to print 4x6 host cards with each round's question, answers, and point values.
+4. Use **Print Cue Cards** to preview landscape 4x6 host cards with each round's question, answers, and point values. Choose **Print / Save as PDF** in the preview window.
 
 5. Before guests arrive, click **Preflight** and check:
 

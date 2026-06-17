@@ -1,4 +1,4 @@
-const CACHE_NAME = "safety-family-feud-pwa-host-controls-v4";
+const CACHE_NAME = "safety-family-feud-pwa-cue-card-preview-v5";
 
 const PRECACHE_URLS = [
   "./",

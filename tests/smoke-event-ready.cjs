@@ -228,7 +228,18 @@ async function main() {
       ]);
       await printPage.waitForLoadState("domcontentloaded");
       const printHtml = await printPage.content();
-      assert(printHtml.includes("@page { size: 4in 6in;"), "Cue-card print CSS does not use 4x6 page size.");
+      assert(printHtml.includes("@page { size: 6in 4in;"), "Cue-card print CSS does not use landscape 4x6 page size.");
+      assert(await printPage.locator("#btnPrintCueCardsPreview").count() === 1, "Cue-card preview is missing a print/PDF button.");
+      assert(await printPage.locator("#btnCloseCueCardsPreview").count() === 1, "Cue-card preview is missing a close button.");
+      assert((await printPage.locator(".preview-note").innerText()).includes("Save as PDF"), "Cue-card preview does not explain Save as PDF.");
+      await printPage.evaluate(() => {
+        window.__printCalls = 0;
+        window.print = () => {
+          window.__printCalls += 1;
+        };
+      });
+      await printPage.locator("#btnPrintCueCardsPreview").click();
+      assert(await printPage.evaluate(() => window.__printCalls) === 1, "Cue-card preview print button did not call window.print.");
       assert(printHtml.includes("Name a workplace hazard people notice first."), "Cue-card print document is missing the question.");
       assert(printHtml.includes("Wet floor"), "Cue-card print document is missing answer text.");
       assert(printHtml.includes("35"), "Cue-card print document is missing answer points.");

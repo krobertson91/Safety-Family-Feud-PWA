@@ -1087,7 +1087,7 @@ function buildCueCardsHtml(sourceData) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${title} Cue Cards</title>
   <style>
-    @page { size: 4in 6in; margin: 0.18in; }
+    @page { size: 6in 4in; margin: 0.16in; }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -1095,22 +1095,80 @@ function buildCueCardsHtml(sourceData) {
       color: #111;
       font-family: Arial, Helvetica, sans-serif;
     }
+    .preview-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      background: #111827;
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(0,0,0,.24);
+    }
+    .preview-title {
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+    .preview-note {
+      margin-top: 3px;
+      color: rgba(255,255,255,.78);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .preview-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .preview-button {
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 10px;
+      padding: 9px 12px;
+      background: rgba(255,255,255,.10);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    .preview-button.primary {
+      background: #f7c948;
+      color: #111;
+      border-color: #f7c948;
+    }
+    .card-sheet {
+      padding: 24px;
+      display: grid;
+      gap: 24px;
+      justify-content: center;
+    }
     .cue-card {
-      width: 4in;
-      min-height: 6in;
+      width: 6in;
+      min-height: 4in;
       page-break-after: always;
       break-after: page;
-      padding: 0.24in;
+      padding: 0.2in;
       background: #fffaf0;
       border: 2px solid #111;
       display: flex;
       flex-direction: column;
-      gap: 0.16in;
+      gap: 0.12in;
     }
     .cue-card:last-child { page-break-after: auto; break-after: auto; }
     header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.12in;
+      align-items: start;
       border-bottom: 2px solid #111;
-      padding-bottom: 0.12in;
+      padding-bottom: 0.08in;
     }
     .game-title {
       font-size: 10pt;
@@ -1120,13 +1178,13 @@ function buildCueCardsHtml(sourceData) {
     }
     .round-name {
       margin-top: 0.04in;
-      font-size: 18pt;
+      font-size: 17pt;
       font-weight: 900;
       text-transform: uppercase;
     }
     .badge {
       display: inline-block;
-      margin-top: 0.06in;
+      margin-top: 0;
       padding: 0.03in 0.07in;
       border: 1px solid #111;
       border-radius: 999px;
@@ -1135,10 +1193,10 @@ function buildCueCardsHtml(sourceData) {
       text-transform: uppercase;
     }
     .question {
-      font-size: 15pt;
+      font-size: 13pt;
       line-height: 1.18;
       font-weight: 900;
-      margin: 0.02in 0 0.16in;
+      margin: 0.02in 0 0.09in;
     }
     ol {
       list-style: none;
@@ -1146,17 +1204,17 @@ function buildCueCardsHtml(sourceData) {
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.08in;
+      gap: 0.055in;
     }
     li {
       display: grid;
-      grid-template-columns: 0.34in 1fr 0.42in;
-      gap: 0.08in;
+      grid-template-columns: 0.34in 1fr 0.48in;
+      gap: 0.07in;
       align-items: center;
-      min-height: 0.34in;
+      min-height: 0.3in;
       border-bottom: 1px solid #bbb;
-      padding-bottom: 0.04in;
-      font-size: 12pt;
+      padding-bottom: 0.025in;
+      font-size: 10.5pt;
       font-weight: 800;
     }
     .answer-rank,
@@ -1171,13 +1229,21 @@ function buildCueCardsHtml(sourceData) {
     .answer-text {
       text-transform: uppercase;
     }
-    @media screen {
-      body {
-        padding: 24px;
-        display: grid;
-        gap: 24px;
-        justify-content: center;
+    @media print {
+      .preview-toolbar { display: none; }
+      .card-sheet {
+        display: block;
+        padding: 0;
       }
+      .cue-card {
+        width: 100%;
+        min-height: auto;
+        height: 100%;
+        border: 0;
+        box-shadow: none;
+      }
+    }
+    @media screen {
       .cue-card {
         box-shadow: 0 16px 40px rgba(0,0,0,.22);
       }
@@ -1185,7 +1251,23 @@ function buildCueCardsHtml(sourceData) {
   </style>
 </head>
 <body>
-  ${cards}
+  <div class="preview-toolbar">
+    <div>
+      <div class="preview-title">Cue Card Preview</div>
+      <div class="preview-note">Landscape 4x6 cards. Use Print / Save as PDF, then choose Save as PDF in the print dialog if you want a PDF file.</div>
+    </div>
+    <div class="preview-actions">
+      <button id="btnPrintCueCardsPreview" class="preview-button primary" type="button">Print / Save as PDF</button>
+      <button id="btnCloseCueCardsPreview" class="preview-button" type="button">Close</button>
+    </div>
+  </div>
+  <div class="card-sheet">
+    ${cards}
+  </div>
+  <script>
+    document.getElementById("btnPrintCueCardsPreview")?.addEventListener("click", () => window.print());
+    document.getElementById("btnCloseCueCardsPreview")?.addEventListener("click", () => window.close());
+  </script>
 </body>
 </html>`;
 }
