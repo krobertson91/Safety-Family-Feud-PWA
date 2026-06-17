@@ -80,6 +80,7 @@ const els = {
   btnDeleteGame: document.getElementById("btnDeleteGame"),
   btnImportGame: document.getElementById("btnImportGame"),
   btnExportGame: document.getElementById("btnExportGame"),
+  btnPrintCueCards: document.getElementById("btnPrintCueCards"),
   fileGameImport: document.getElementById("fileGameImport"),
   btnPreflight: document.getElementById("btnPreflight"),
   btnSound: document.getElementById("btnSound"),
@@ -138,6 +139,7 @@ const editorEls = {
   btnBack: document.getElementById("btnEditorBack"),
   btnSave: document.getElementById("btnEditorSave"),
   btnExport: document.getElementById("btnEditorExport"),
+  btnPrintCueCards: document.getElementById("btnEditorPrintCueCards"),
   btnImport: document.getElementById("btnEditorImport"),
   fileImport: document.getElementById("fileImport"),
   gameTitle: document.getElementById("editGameTitle"),
@@ -1036,6 +1038,158 @@ function exportActiveGame() {
   downloadJson(payload, `${sanitizeFileName(payload.game.title)}.json`);
 }
 
+function buildCueCardsHtml(sourceData) {
+  const game = normalizeGameData(sourceData);
+  const title = escapeHtml(game.title || "Safety Family Feud");
+  const cards = game.rounds.map((round, roundIdx) => {
+    const roundName = escapeHtml(round.name || `Round ${roundIdx + 1}`);
+    const question = escapeHtml(round.question || "");
+    const finalBadge = isFinalRound(round) ? `<div class="badge">Final Round · 200 Points</div>` : "";
+    const answers = (round.answers || []).map((answer, answerIdx) => `
+      <li>
+        <span class="answer-rank">${answerIdx + 1}</span>
+        <span class="answer-text">${escapeHtml(answer.text || "")}</span>
+        <span class="answer-points">${Number(answer.points || 0)}</span>
+      </li>
+    `).join("");
+
+    return `
+      <section class="cue-card">
+        <header>
+          <div class="game-title">${title}</div>
+          <div class="round-name">${roundName}</div>
+          ${finalBadge}
+        </header>
+        <main>
+          <div class="question">${question}</div>
+          <ol>${answers}</ol>
+        </main>
+      </section>
+    `;
+  }).join("");
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${title} Cue Cards</title>
+  <style>
+    @page { size: 4in 6in; margin: 0.18in; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f5f1df;
+      color: #111;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .cue-card {
+      width: 4in;
+      min-height: 6in;
+      page-break-after: always;
+      break-after: page;
+      padding: 0.24in;
+      background: #fffaf0;
+      border: 2px solid #111;
+      display: flex;
+      flex-direction: column;
+      gap: 0.16in;
+    }
+    .cue-card:last-child { page-break-after: auto; break-after: auto; }
+    header {
+      border-bottom: 2px solid #111;
+      padding-bottom: 0.12in;
+    }
+    .game-title {
+      font-size: 10pt;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .round-name {
+      margin-top: 0.04in;
+      font-size: 18pt;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 0.06in;
+      padding: 0.03in 0.07in;
+      border: 1px solid #111;
+      border-radius: 999px;
+      font-size: 8pt;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .question {
+      font-size: 15pt;
+      line-height: 1.18;
+      font-weight: 900;
+      margin: 0.02in 0 0.16in;
+    }
+    ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.08in;
+    }
+    li {
+      display: grid;
+      grid-template-columns: 0.34in 1fr 0.42in;
+      gap: 0.08in;
+      align-items: center;
+      min-height: 0.34in;
+      border-bottom: 1px solid #bbb;
+      padding-bottom: 0.04in;
+      font-size: 12pt;
+      font-weight: 800;
+    }
+    .answer-rank,
+    .answer-points {
+      display: grid;
+      place-items: center;
+      min-height: 0.3in;
+      border: 1px solid #111;
+      border-radius: 0.05in;
+      font-weight: 900;
+    }
+    .answer-text {
+      text-transform: uppercase;
+    }
+    @media screen {
+      body {
+        padding: 24px;
+        display: grid;
+        gap: 24px;
+        justify-content: center;
+      }
+      .cue-card {
+        box-shadow: 0 16px 40px rgba(0,0,0,.22);
+      }
+    }
+  </style>
+</head>
+<body>
+  ${cards}
+</body>
+</html>`;
+}
+
+function printCueCards(sourceData) {
+  const printWindow = window.open("", "safety-family-feud-cue-cards");
+  if (!printWindow) {
+    alert("Pop-up blocked. Allow pop-ups to print cue cards.");
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(buildCueCardsHtml(sourceData));
+  printWindow.document.close();
+  printWindow.focus();
+}
+
 function hasSamplePlaceholder(value) {
   return /^sample\s+(question|answer)/i.test(String(value || "").trim());
 }
@@ -1239,7 +1393,7 @@ function renderRound() {
     inner.className = "cardInner";
     const front = document.createElement("div");
     front.className = "face front";
-    front.innerHTML = `<div class="slot">${idx+1}</div><div class="answerText hiddenText">HIDDEN</div><div class="points">—</div>`;
+    front.innerHTML = `<div class="slot">${idx+1}</div><div class="answerText">${escapeHtml(a.text ?? "")}</div><div class="points">${Number(a.points ?? 0)}</div>`;
     const back = document.createElement("div");
     back.className = "face back";
     back.innerHTML = `<div class="slot">${idx+1}</div><div class="answerText">${escapeHtml(a.text ?? "")}</div><div class="points">${Number(a.points ?? 0)}</div>`;
@@ -1632,6 +1786,7 @@ async function init() {
     els.fileGameImport.value = "";
   });
   els.btnExportGame?.addEventListener("click", exportActiveGame);
+  els.btnPrintCueCards?.addEventListener("click", () => printCueCards(data || getDataFromStorage()));
   els.btnPreflight?.addEventListener("click", openPreflight);
   els.btnClosePreflight?.addEventListener("click", closePreflight);
   els.preflightPanel?.addEventListener("click", (event) => {
@@ -1669,6 +1824,13 @@ async function init() {
   editorEls.btnBack?.addEventListener("click", closeEditor);
   editorEls.btnSave?.addEventListener("click", saveEditorDraft);
   editorEls.btnExport?.addEventListener("click", exportEditorDraft);
+  editorEls.btnPrintCueCards?.addEventListener("click", () => {
+    commitEditorFields();
+    normalizeDraftRounds(editor.draft);
+    const err = validateDraft(editor.draft);
+    if (err) { alert(err); return; }
+    printCueCards(editor.draft);
+  });
   editorEls.btnImport?.addEventListener("click", ()=>editorEls.fileImport?.click());
   editorEls.fileImport?.addEventListener("change",()=>{ const f=editorEls.fileImport.files?.[0]; if(f) importEditorFile(f); editorEls.fileImport.value=""; });
 

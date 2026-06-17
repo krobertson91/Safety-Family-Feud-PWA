@@ -160,16 +160,54 @@ async function main() {
       await page.locator("#btnStart").click();
       assert(await page.locator("#screen-game.active").count() === 1, "Game screen did not open.");
       assert((await page.locator("#question").innerText()).includes("workplace hazard"), "Saved question did not appear in game.");
+      assert(
+        (await page.locator("#answers .card[data-idx='0'] .front .answerText").innerText()).toLowerCase().includes("wet floor"),
+        "Host answer text was not visible before reveal."
+      );
+      assert(
+        (await page.locator("#answers .card[data-idx='0'] .front .points").innerText()).includes("35"),
+        "Host answer points were not visible before reveal."
+      );
+
+      const audiencePage = await context.newPage();
+      audiencePage.on("console", (msg) => logs.push(`audience-console:${msg.type()}:${msg.text()}`));
+      audiencePage.on("pageerror", (err) => logs.push(`audience-pageerror:${err.message}`));
+      await audiencePage.goto(`${baseUrl}/?view=audience`, { waitUntil: "networkidle" });
+      assert(await audiencePage.locator("#screen-audience.active").count() === 1, "Audience view did not render.");
+      assert((await audiencePage.locator("#audienceQuestion").innerText()).includes("workplace hazard"), "Audience view did not receive current game state.");
+      assert(
+        (await audiencePage.locator("#audienceAnswers .audienceCard").first().innerText()).includes("HIDDEN"),
+        "Audience answer was visible before host reveal."
+      );
+
       await page.keyboard.press("1");
       await page.waitForTimeout(250);
       assert(await page.locator("#answers .card[data-idx='0'].revealed").count() === 1, "First answer did not reveal.");
       assert(Number(await page.locator("#roundTotal").innerText()) > 0, "Round total did not update after reveal.");
-
-      await page.goto(`${baseUrl}/?view=audience`, { waitUntil: "networkidle" });
-      assert(await page.locator("#screen-audience.active").count() === 1, "Audience view did not render.");
-      assert((await page.locator("#audienceQuestion").innerText()).includes("workplace hazard"), "Audience view did not receive current game state.");
+      await audiencePage.waitForFunction(() => {
+        const firstCard = document.querySelector("#audienceAnswers .audienceCard");
+        return firstCard && firstCard.textContent.includes("Wet floor");
+      });
+      assert(
+        (await audiencePage.locator("#audienceAnswers .audienceCard").first().innerText()).toLowerCase().includes("wet floor"),
+        "Audience answer did not reveal after host click."
+      );
+      await audiencePage.close();
 
       await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
+      assert(await page.locator("#btnPrintCueCards").count() === 1, "Print Cue Cards button is missing.");
+      const [printPage] = await Promise.all([
+        context.waitForEvent("page"),
+        page.locator("#btnPrintCueCards").click(),
+      ]);
+      await printPage.waitForLoadState("domcontentloaded");
+      const printHtml = await printPage.content();
+      assert(printHtml.includes("@page { size: 4in 6in;"), "Cue-card print CSS does not use 4x6 page size.");
+      assert(printHtml.includes("Name a workplace hazard people notice first."), "Cue-card print document is missing the question.");
+      assert(printHtml.includes("Wet floor"), "Cue-card print document is missing answer text.");
+      assert(printHtml.includes("35"), "Cue-card print document is missing answer points.");
+      await printPage.close();
+
       await page.locator("#btnPreflight").click();
       assert(await page.locator("#preflightPanel.active").count() === 1, "Preflight panel did not open.");
       assert(await page.locator("#preflightOverall").count() === 1, "Preflight overall status is missing.");

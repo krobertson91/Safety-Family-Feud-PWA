@@ -9,6 +9,7 @@ Open the shared GitHub Pages version:
 https://krobertson91.github.io/Safety-Family-Feud-PWA/
 
 Each person's questions and edits save in their own browser. Use **Export Active Game** to back up or share a game pack.
+Use **Print Cue Cards** to print one 4x6 host card per round.
 
 ## Event Host Checklist
 
@@ -30,7 +31,9 @@ Each person's questions and edits save in their own browser. Use **Export Active
 
 3. Use **New Game**, **Duplicate**, **Edit Questions**, **Import Game Pack**, and **Export Active Game** from the start screen to manage each event's questions.
 
-4. Before guests arrive, click **Preflight** and check:
+4. Use **Print Cue Cards** to print 4x6 host cards with each round's question, answers, and point values.
+
+5. Before guests arrive, click **Preflight** and check:
 
    - Content has no sample questions or answers.
    - Theme, correct-answer, and buzzer sounds all play.
@@ -38,9 +41,9 @@ Each person's questions and edits save in their own browser. Use **Export Active
    - Offline/PWA status is registered.
    - The display is landscape/fullscreen.
 
-5. Export the active game pack after editing so you have a backup JSON file.
+6. Export the active game pack after editing so you have a backup JSON file.
 
-6. On game day, enter team names, open the audience display, click **Start**, and use number keys `1-8` or click cards to reveal answers.
+7. On game day, enter team names, open the audience display, click **Start**, and use number keys `1-8` or click cards to reveal answers.
 
 ## Verification
 
