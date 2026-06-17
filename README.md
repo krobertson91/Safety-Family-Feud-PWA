@@ -2,6 +2,14 @@
 
 A local-first Family Feud style game for safety training events.
 
+## Hosted App
+
+Open the shared GitHub Pages version:
+
+https://krobertson91.github.io/Safety-Family-Feud-PWA/
+
+Each person's questions and edits save in their own browser. Use **Export Active Game** to back up or share a game pack.
+
 ## Event Host Checklist
 
 1. On Windows, double-click:
