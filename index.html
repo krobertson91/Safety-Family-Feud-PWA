@@ -100,6 +100,13 @@
           <div class="roundTotal">
             <span class="muted">Round Total</span>
             <div id="roundTotal" class="roundTotalValue">0</div>
+            <div class="answeringTeam" aria-label="Answering team">
+              <span class="label">Answering Team</span>
+              <div class="answeringTeamChoices" role="group" aria-label="Select answering team">
+                <button id="btnAnsweringTeam1" class="teamPick active" type="button" aria-pressed="true">Team 1</button>
+                <button id="btnAnsweringTeam2" class="teamPick" type="button" aria-pressed="false">Team 2</button>
+              </div>
+            </div>
             <div class="row gap wrap">
               <button id="btnAwardTeam1" class="btn tiny primary" type="button">Award → Team 1</button>
               <button id="btnAwardTeam2" class="btn tiny primary" type="button">Award → Team 2</button>
@@ -132,7 +139,7 @@
           <button id="btnStopMusicInGame" class="btn tiny ghost" type="button">Stop Theme</button>
         </div>
         <div class="muted small">
-          Keyboard: <b>1-8</b> reveal, <b>X</b> strike Team 1, <b>M</b> strike Team 2, <b>R</b> reset round.
+          Keyboard: <b>1-8</b> correct/reveal, <b>X</b> strike answering team, <b>R</b> reset round.
         </div>
       </footer>
     </section>
@@ -291,7 +298,7 @@
           <section class="preflightRow">
             <div>
               <div class="label">Audience Display</div>
-              <div id="preflightAudienceStatus" class="preflightStatus">Open the audience view and confirm it mirrors the host.</div>
+              <div id="preflightAudienceStatus" class="preflightStatus">Open the audience view and confirm it shows the live board.</div>
             </div>
             <button id="btnPreflightAudience" class="btn tiny ghost" type="button">Open Audience</button>
           </section>

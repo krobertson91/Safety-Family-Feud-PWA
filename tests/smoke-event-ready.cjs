@@ -168,6 +168,14 @@ async function main() {
         (await page.locator("#answers .card[data-idx='0'] .front .points").innerText()).includes("35"),
         "Host answer points were not visible before reveal."
       );
+      assert(await page.locator("#btnAnsweringTeam1").count() === 1, "Answering Team 1 selector is missing.");
+      assert(await page.locator("#btnAnsweringTeam2").count() === 1, "Answering Team 2 selector is missing.");
+      assert(
+        (await page.locator("#btnAnsweringTeam1").innerText()).toLowerCase().includes("alpha"),
+        "Answering Team 1 selector did not show the team name."
+      );
+      assert(await page.locator("#answers .card[data-idx='0'] .answerCorrect").count() === 1, "Host correct-answer control is missing.");
+      assert(await page.locator("#answers .card[data-idx='1'] .answerStrike").count() === 1, "Host red-X answer control is missing.");
 
       const audiencePage = await context.newPage();
       audiencePage.on("console", (msg) => logs.push(`audience-console:${msg.type()}:${msg.text()}`));
@@ -179,8 +187,26 @@ async function main() {
         (await audiencePage.locator("#audienceAnswers .audienceCard").first().innerText()).includes("HIDDEN"),
         "Audience answer was visible before host reveal."
       );
+      assert(await audiencePage.locator("button.audienceStrike").count() === 0, "Audience strikes should be display-only.");
 
-      await page.keyboard.press("1");
+      await page.locator("#btnAnsweringTeam2").click();
+      assert(await page.locator("#btnAnsweringTeam2[aria-pressed='true']").count() === 1, "Answering Team 2 was not selected.");
+      const roundTotalBeforeStrike = Number(await page.locator("#roundTotal").innerText());
+      await page.locator("#answers .card[data-idx='1'] .answerStrike").click();
+      await audiencePage.waitForFunction(() => {
+        const bigX = document.querySelector("#bigX");
+        return bigX && bigX.classList.contains("show") && bigX.getAttribute("aria-hidden") === "false";
+      });
+      await page.waitForTimeout(250);
+      assert(Number(await page.locator("#roundTotal").innerText()) === roundTotalBeforeStrike, "Wrong-answer strike changed the round total.");
+      assert(await page.locator("#answers .card[data-idx='1'].revealed").count() === 0, "Wrong-answer strike revealed the host answer.");
+      await audiencePage.waitForFunction(() => document.querySelectorAll("#audienceTeam2Strikes .audienceStrike.used").length === 1);
+      assert(
+        (await audiencePage.locator("#audienceAnswers .audienceCard").nth(1).innerText()).includes("HIDDEN"),
+        "Wrong-answer strike revealed the audience answer."
+      );
+
+      await page.locator("#answers .card[data-idx='0'] .answerCorrect").click();
       await page.waitForTimeout(250);
       assert(await page.locator("#answers .card[data-idx='0'].revealed").count() === 1, "First answer did not reveal.");
       assert(Number(await page.locator("#roundTotal").innerText()) > 0, "Round total did not update after reveal.");

@@ -101,6 +101,8 @@ const els = {
   btnNextRound: document.getElementById("btnNextRound"),
   btnAwardTeam1: document.getElementById("btnAwardTeam1"),
   btnAwardTeam2: document.getElementById("btnAwardTeam2"),
+  btnAnsweringTeam1: document.getElementById("btnAnsweringTeam1"),
+  btnAnsweringTeam2: document.getElementById("btnAnsweringTeam2"),
   btnRevealRemaining: document.getElementById("btnRevealRemaining"),
   btnResetRound: document.getElementById("btnResetRound"),
   btnBackToStart: document.getElementById("btnBackToStart"),
@@ -638,15 +640,14 @@ function openAudienceDisplay() {
   updatePreflightStatus();
 }
 
-function renderAudienceStrikes(container, count, teamKey) {
+function renderAudienceStrikes(container, count) {
   if (!container) return;
   container.innerHTML = "";
   for (let i = 0; i < 3; i++) {
-    const strike = document.createElement("button");
-    strike.type = "button";
+    const strike = document.createElement("span");
     strike.className = "audienceStrike" + (i < Number(count || 0) ? " used" : "");
     strike.textContent = "X";
-    strike.addEventListener("click", () => handleAudienceStrike(teamKey));
+    strike.setAttribute("aria-hidden", "true");
     container.appendChild(strike);
   }
 }
@@ -662,6 +663,13 @@ function renderAudienceState(state) {
     answers: [],
   };
 
+  const previousStrikes = audienceState?.strikes || { team1: 0, team2: 0 };
+  const nextStrikes = safeState.strikes || { team1: 0, team2: 0 };
+  const strikeIncreased = !!audienceState && !!state && (
+    Number(nextStrikes.team1 || 0) > Number(previousStrikes.team1 || 0) ||
+    Number(nextStrikes.team2 || 0) > Number(previousStrikes.team2 || 0)
+  );
+
   audienceState = safeState;
 
   setAudienceText(els.audienceStatus, state ? "Live" : "Waiting");
@@ -673,8 +681,8 @@ function renderAudienceState(state) {
   setAudienceText(els.audienceRoundName, safeState.roundName || "Round 1");
   setAudienceText(els.audienceQuestion, safeState.question || "");
   setAudienceText(els.audienceRoundTotal, safeState.roundTotal || 0);
-  renderAudienceStrikes(els.audienceTeam1Strikes, safeState.strikes?.team1 || 0, "team1");
-  renderAudienceStrikes(els.audienceTeam2Strikes, safeState.strikes?.team2 || 0, "team2");
+  renderAudienceStrikes(els.audienceTeam1Strikes, safeState.strikes?.team1 || 0);
+  renderAudienceStrikes(els.audienceTeam2Strikes, safeState.strikes?.team2 || 0);
 
   if (!els.audienceAnswers) return;
   els.audienceAnswers.innerHTML = "";
@@ -700,6 +708,8 @@ function renderAudienceState(state) {
     spacer.style.visibility = "hidden";
     els.audienceAnswers.appendChild(spacer);
   }
+
+  if (strikeIncreased) showBigX();
 }
 
 async function initAudience() {
@@ -957,6 +967,7 @@ let revealed = new Set();
 let revealedWithoutPoints = new Set();
 let roundTotal = 0;
 let strikes = { team1: 0, team2: 0 };
+let answeringTeamKey = "team1";
 const preflightAudioChecks = { theme: false, bell: false, buzzer: false };
 let preflightAudienceOpened = false;
 
@@ -973,6 +984,7 @@ function resetRuntimeRoundState() {
   revealedWithoutPoints = new Set();
   roundTotal = 0;
   strikes = { team1: 0, team2: 0 };
+  answeringTeamKey = "team1";
 }
 
 function renderGameLibraryControls() {
@@ -1256,7 +1268,7 @@ async function updatePreflightStatus() {
     els.preflightAudienceStatus,
     preflightAudienceOpened,
     "Audience display has been opened from this host session.",
-    "Open the audience display and confirm it mirrors the host view."
+    "Open the audience display and confirm it shows the live board."
   );
   setPreflightStatus(els.preflightOfflineStatus, offline.ok, offline.text, offline.text);
   setPreflightStatus(
@@ -1311,15 +1323,43 @@ async function testPreflightSound(kind) {
   updatePreflightStatus();
 }
 
+function getTeamName(teamKey) {
+  const fallback = teamKey === "team2" ? "TEAM 2" : "TEAM 1";
+  const input = teamKey === "team2" ? els.team2Name : els.team1Name;
+  return (input?.value || fallback).trim() || fallback;
+}
+
+function updateAnsweringTeamControls() {
+  const controls = {
+    team1: els.btnAnsweringTeam1,
+    team2: els.btnAnsweringTeam2,
+  };
+
+  Object.entries(controls).forEach(([teamKey, button]) => {
+    if (!button) return;
+    const selected = answeringTeamKey === teamKey;
+    button.textContent = getTeamName(teamKey);
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+}
+
+function setAnsweringTeam(teamKey) {
+  if (teamKey !== "team1" && teamKey !== "team2") return;
+  answeringTeamKey = teamKey;
+  updateAnsweringTeamControls();
+}
+
 function updateTeamDisplayNames() {
-  const t1 = (els.team1Name?.value || "TEAM 1").trim() || "TEAM 1";
-  const t2 = (els.team2Name?.value || "TEAM 2").trim() || "TEAM 2";
+  const t1 = getTeamName("team1");
+  const t2 = getTeamName("team2");
   els.team1DisplayName && (els.team1DisplayName.textContent = t1);
   els.team2DisplayName && (els.team2DisplayName.textContent = t2);
+  updateAnsweringTeamControls();
 }
 function updateAwardButtons() {
-  const t1 = (els.team1Name?.value || "TEAM 1").trim() || "TEAM 1";
-  const t2 = (els.team2Name?.value || "TEAM 2").trim() || "TEAM 2";
+  const t1 = getTeamName("team1");
+  const t2 = getTeamName("team2");
   els.btnAwardTeam1 && (els.btnAwardTeam1.textContent = `Award → ${t1}`);
   els.btnAwardTeam2 && (els.btnAwardTeam2.textContent = `Award → ${t2}`);
 }
@@ -1393,13 +1433,31 @@ function renderRound() {
     inner.className = "cardInner";
     const front = document.createElement("div");
     front.className = "face front";
-    front.innerHTML = `<div class="slot">${idx+1}</div><div class="answerText">${escapeHtml(a.text ?? "")}</div><div class="points">${Number(a.points ?? 0)}</div>`;
+    front.innerHTML = `
+      <div class="slot">${idx+1}</div>
+      <div class="answerText">${escapeHtml(a.text ?? "")}</div>
+      <div class="hostAnswerMeta">
+        <div class="points">${Number(a.points ?? 0)}</div>
+        ${isShown ? "" : `
+          <div class="answerActions" aria-label="Host controls for answer ${idx+1}">
+            <button class="answerAction answerCorrect" type="button" data-answer-action="correct">Correct</button>
+            <button class="answerAction answerStrike" type="button" data-answer-action="strike" aria-label="Wrong answer, add a strike to the answering team">X</button>
+          </div>
+        `}
+      </div>`;
     const back = document.createElement("div");
     back.className = "face back";
     back.innerHTML = `<div class="slot">${idx+1}</div><div class="answerText">${escapeHtml(a.text ?? "")}</div><div class="points">${Number(a.points ?? 0)}</div>`;
     inner.appendChild(front); inner.appendChild(back);
     card.appendChild(inner);
-    card.addEventListener("click", ()=>revealAnswer(idx));
+    card.querySelector(".answerCorrect")?.addEventListener("click", (event)=>{
+      event.stopPropagation();
+      revealAnswer(idx);
+    });
+    card.querySelector(".answerStrike")?.addEventListener("click", (event)=>{
+      event.stopPropagation();
+      addStrike(answeringTeamKey);
+    });
     els.answers.appendChild(card);
   });
   if ((answers.length % 2)===1) {
@@ -1800,6 +1858,7 @@ async function init() {
   els.btnStart?.addEventListener("click",()=>{
     const err = validateDraft(data);
     if (err) { alert(`Finish the active game before starting: ${err}`); return; }
+    setAnsweringTeam("team1");
     playTheme(); showScreen("game"); resetRound();
   });
 
@@ -1884,6 +1943,8 @@ async function init() {
 
   els.btnAwardTeam1?.addEventListener("click",()=>awardPoints("team1"));
   els.btnAwardTeam2?.addEventListener("click",()=>awardPoints("team2"));
+  els.btnAnsweringTeam1?.addEventListener("click",()=>setAnsweringTeam("team1"));
+  els.btnAnsweringTeam2?.addEventListener("click",()=>setAnsweringTeam("team2"));
   els.btnRevealRemaining?.addEventListener("click", revealRemainingAnswersWithoutPoints);
   els.btnResetRound?.addEventListener("click", resetRound);
 
@@ -1891,7 +1952,7 @@ async function init() {
     if (!els.gameScreen.classList.contains("active")) return;
     const k=e.key.toLowerCase();
     if (k>="1" && k<="8") return revealAnswer(Number(k)-1);
-    if (k==="x") return addStrike("team1");
+    if (k==="x") return addStrike(answeringTeamKey);
     if (k==="m") return addStrike("team2");
     if (k==="r") return resetRound();
     if (k==="escape") { stopTheme(); showScreen("start"); }

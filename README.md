@@ -37,13 +37,13 @@ Use **Print Cue Cards** to print one 4x6 host card per round.
 
    - Content has no sample questions or answers.
    - Theme, correct-answer, and buzzer sounds all play.
-   - Audience display opens and mirrors the host.
+   - Audience display opens and shows the live board.
    - Offline/PWA status is registered.
    - The display is landscape/fullscreen.
 
 6. Export the active game pack after editing so you have a backup JSON file.
 
-7. On game day, enter team names, open the audience display, click **Start**, and use number keys `1-8` or click cards to reveal answers.
+7. On game day, enter team names, open the audience display, click **Start**, choose the answering team, then use **Correct** to reveal answers or the red **X** to assign strikes.
 
 ## Verification
 
