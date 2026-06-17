@@ -1,0 +1,45 @@
+# Safety Family Feud PWA
+
+A local-first Family Feud style game for safety training events.
+
+## Event Host Checklist
+
+1. On Windows, double-click:
+
+   ```text
+   Start Safety Family Feud.cmd
+   ```
+
+   Keep the command window open while using the app.
+
+2. If you prefer the manual command, open the folder in PowerShell and run:
+
+   ```powershell
+   python -m http.server 8000
+   ```
+
+   Then open `http://localhost:8000`.
+
+3. Use **New Game**, **Duplicate**, **Edit Questions**, **Import Game Pack**, and **Export Active Game** from the start screen to manage each event's questions.
+
+4. Before guests arrive, click **Preflight** and check:
+
+   - Content has no sample questions or answers.
+   - Theme, correct-answer, and buzzer sounds all play.
+   - Audience display opens and mirrors the host.
+   - Offline/PWA status is registered.
+   - The display is landscape/fullscreen.
+
+5. Export the active game pack after editing so you have a backup JSON file.
+
+6. On game day, enter team names, open the audience display, click **Start**, and use number keys `1-8` or click cards to reveal answers.
+
+## Verification
+
+Run the automated smoke test:
+
+```powershell
+node tests/run-smoke.cjs
+```
+
+The test checks JavaScript syntax, app startup, editing/saving a game, answer reveal, audience display sync, local audio files, sound-test wiring, and service worker registration.

@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Safety Family Feud</title>
+  <meta name="theme-color" content="#0b36ff" />
+  <meta name="application-name" content="Safety Family Feud" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Safety Feud" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="Safety_Family_Feud_Icon.ico" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <section id="screen-start" class="screen active" aria-label="Start screen">
+      <div class="start-card">
+        <div class="ffLogo">
+          <div class="ffLogoInner">FAMILY<br/>FEUD</div>
+          <div class="ffLogoSub">SAFETY EDITION</div>
+        </div>
+
+        <h1 id="gameTitle" class="visTitle">Safety Family Feud</h1>
+
+        <div class="gameSetup" aria-label="Game setup">
+          <div class="field gameSelectField">
+            <label class="label" for="gameSelect">Active Game</label>
+            <select id="gameSelect" class="input gameSelect"></select>
+          </div>
+          <div class="row gap wrap gameSetupActions">
+            <button id="btnNewGame" class="btn tiny primary" type="button">New Game</button>
+            <button id="btnDuplicateGame" class="btn tiny ghost" type="button">Duplicate</button>
+            <button id="btnDeleteGame" class="btn tiny ghost danger" type="button">Delete</button>
+            <button id="btnImportGame" class="btn tiny ghost" type="button">Import Game Pack</button>
+            <button id="btnExportGame" class="btn tiny ghost" type="button">Export Active Game</button>
+            <button id="btnPreflight" class="btn tiny ghost" type="button">Preflight</button>
+            <input id="fileGameImport" type="file" accept="application/json" style="display:none" />
+          </div>
+        </div>
+
+        <div class="teamSetup">
+          <div class="field">
+            <label class="label" for="team1Name">Team 1 Name</label>
+            <input id="team1Name" class="teamNameInput" type="text" placeholder="Team 1" />
+          </div>
+          <div class="field">
+            <label class="label" for="team2Name">Team 2 Name</label>
+            <input id="team2Name" class="teamNameInput" type="text" placeholder="Team 2" />
+          </div>
+        </div>
+
+        <div class="row gap startActions wrap">
+          <button id="btnStart" class="btn primary" type="button">Start</button>
+          <button id="btnEdit" class="btn ghost" type="button">Edit Questions</button>
+          <button id="btnOpenAudience" class="btn ghost" type="button">Open Audience Display</button>
+          <button id="btnInstallPwa" class="btn ghost" type="button" hidden>Install App</button>
+          <button id="btnResetGame" class="btn ghost" type="button">Reset Game</button>
+        </div>
+
+        <div class="row gap startActions wrap">
+          <button id="btnSound" class="btn tiny" type="button">Sound: ON</button>
+          <button id="btnStopMusic" class="btn tiny ghost" type="button">Stop Theme</button>
+        </div>
+
+        <p class="hint">Audio starts after you click Start (browser rule).</p>
+        <details class="details">
+          <summary>Offline tip (if a browser blocks features)</summary>
+          <div class="small muted">
+            To install or run offline, open PowerShell inside this folder and run:<br/>
+            <code>python -m http.server 8000</code><br/>
+            Then open: <code>http://localhost:8000</code>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="screen-game" class="screen" aria-label="Game screen">
+      <header class="topbar">
+        <div class="team teamLeft">
+          <div id="team1DisplayName" class="teamDisplayName">Team 1</div>
+          <div class="scoreRow">
+            <span class="scoreLabel">Score</span>
+            <span id="team1Score" class="score">0</span>
+          </div>
+          <div class="strikes" id="team1Strikes" aria-label="Team 1 strikes"></div>
+        </div>
+
+        <div class="centerHeader">
+          <div class="roundMeta">
+            <button id="btnPrevRound" class="btn tiny ghost" type="button" title="Previous round">◀</button>
+            <div>
+              <div id="roundName" class="roundName">Round 1</div>
+              <div id="question" class="question">Question goes here…</div>
+            </div>
+            <button id="btnNextRound" class="btn tiny ghost" type="button" title="Next round">▶</button>
+          </div>
+
+          <div class="roundTotal">
+            <span class="muted">Round Total</span>
+            <div id="roundTotal" class="roundTotalValue">0</div>
+            <div class="row gap wrap">
+              <button id="btnAwardTeam1" class="btn tiny primary" type="button">Award → Team 1</button>
+              <button id="btnAwardTeam2" class="btn tiny primary" type="button">Award → Team 2</button>
+              <button id="btnRevealRemaining" class="btn tiny ghost" type="button">Reveal Unanswered</button>
+              <button id="btnResetRound" class="btn tiny ghost" type="button">Reset Round</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="team teamRight">
+          <div id="team2DisplayName" class="teamDisplayName">Team 2</div>
+          <div class="scoreRow">
+            <span class="scoreLabel">Score</span>
+            <span id="team2Score" class="score">0</span>
+          </div>
+          <div class="strikes" id="team2Strikes" aria-label="Team 2 strikes"></div>
+        </div>
+      </header>
+
+      <main class="board" aria-label="Answer board">
+        <div id="answers" class="answers"></div>
+      </main>
+
+      <footer class="bottombar">
+        <div class="row gap wrap">
+          <button id="btnBackToStart" class="btn ghost" type="button">Exit</button>
+          <button id="btnEditInGame" class="btn ghost" type="button">Edit Questions</button>
+          <button id="btnOpenAudienceInGame" class="btn ghost" type="button">Open Audience Display</button>
+          <button id="btnSoundInGame" class="btn tiny" type="button">Sound: ON</button>
+          <button id="btnStopMusicInGame" class="btn tiny ghost" type="button">Stop Theme</button>
+        </div>
+        <div class="muted small">
+          Keyboard: <b>1-8</b> reveal, <b>X</b> strike Team 1, <b>M</b> strike Team 2, <b>R</b> reset round.
+        </div>
+      </footer>
+    </section>
+
+    <section id="screen-audience" class="screen audienceScreen" aria-label="Audience display">
+      <div class="audienceShell">
+        <header class="audienceTopbar">
+          <div class="audienceTeam audienceTeamLeft">
+            <div id="audienceTeam1Name" class="audienceTeamName">Team 1</div>
+            <div class="audienceScoreRow">
+              <span>Score</span>
+              <strong id="audienceTeam1Score">0</strong>
+            </div>
+            <div class="audienceStrikes" id="audienceTeam1Strikes" aria-label="Team 1 strikes"></div>
+          </div>
+
+          <div class="audienceCenter">
+            <div class="audienceStatusRow">
+              <span id="audienceStatus" class="audienceStatus">Waiting</span>
+              <span id="audienceTitle" class="audienceTitle">Safety Family Feud</span>
+            </div>
+            <div id="audienceRoundName" class="audienceRoundName">Round 1</div>
+            <div id="audienceQuestion" class="audienceQuestion">Waiting for host...</div>
+            <div class="audienceRoundTotalWrap">
+              <span>Round Total</span>
+              <strong id="audienceRoundTotal">0</strong>
+            </div>
+          </div>
+
+          <div class="audienceTeam audienceTeamRight">
+            <div id="audienceTeam2Name" class="audienceTeamName">Team 2</div>
+            <div class="audienceScoreRow">
+              <span>Score</span>
+              <strong id="audienceTeam2Score">0</strong>
+            </div>
+            <div class="audienceStrikes" id="audienceTeam2Strikes" aria-label="Team 2 strikes"></div>
+          </div>
+        </header>
+
+        <main class="audienceBoard" aria-label="Audience answer board">
+          <div id="audienceAnswers" class="audienceAnswers"></div>
+        </main>
+      </div>
+    </section>
+    <section id="screen-editor" class="screen" aria-label="Editor screen">
+      <div class="editorShell">
+        <header class="editorTop">
+          <div class="editorTitleWrap">
+            <div class="editorBadge">EDIT</div>
+            <div>
+              <div class="editorHeadline">Game Editor</div>
+              <div class="muted small">Update title, rounds, questions, answers, and points.</div>
+            </div>
+          </div>
+
+          <div class="row gap wrap">
+            <button id="btnEditorBack" class="btn ghost" type="button">Back</button>
+            <button id="btnEditorSave" class="btn primary" type="button">Save</button>
+            <button id="btnEditorExport" class="btn ghost" type="button">Export</button>
+            <button id="btnEditorImport" class="btn ghost" type="button">Import</button>
+            <input id="fileImport" type="file" accept="application/json" style="display:none" />
+          </div>
+        </header>
+
+        <main class="editorGrid">
+          <aside class="editorSidebar">
+            <div class="field">
+              <label class="label" for="editGameTitle">Game Title</label>
+              <input id="editGameTitle" class="input" type="text" placeholder="Safety Family Feud" />
+            </div>
+
+            <div class="sidebarHeader">
+              <div class="label">Rounds</div>
+              <div class="row gap wrap sidebarActions">
+                <button id="btnAddRound" class="btn tiny primary" type="button">+ Add</button>
+                <button id="btnAddFinalRound" class="btn tiny ghost" type="button">Add Final Round</button>
+              </div>
+            </div>
+            <div id="roundList" class="roundList" role="listbox" aria-label="Rounds list"></div>
+
+            <div class="row gap wrap roundTools">
+              <button id="btnMoveRoundUp" class="btn tiny ghost" type="button">Move Up</button>
+              <button id="btnMoveRoundDown" class="btn tiny ghost" type="button">Move Down</button>
+              <button id="btnDeleteRound" class="btn tiny ghost danger" type="button">Delete Selected Round</button>
+            </div>
+          </aside>
+
+          <section class="editorMain">
+            <div class="field">
+              <label class="label" for="editRoundName">Round Name</label>
+              <input id="editRoundName" class="input" type="text" placeholder="Round 1" />
+            </div>
+
+            <div class="field">
+              <label class="label" for="editQuestion">Question</label>
+              <textarea id="editQuestion" class="textarea" rows="3" placeholder="Type the question here…"></textarea>
+            </div>
+
+            <div id="editRoundTotal" class="roundTotalChip">Round Total: 100</div>
+
+            <div class="answersHeader">
+              <div class="label">Answers</div>
+              <button id="btnAddAnswer" class="btn tiny primary" type="button">+ Add Answer</button>
+            </div>
+
+            <div class="answersTable" aria-label="Answers table">
+              <div class="answersRow answersRowHead">
+                <div>Answer</div>
+                <div class="colPoints">Points</div>
+                <div class="colActions">Remove</div>
+              </div>
+              <div id="answersEditor"></div>
+            </div>
+
+            <div class="editorHelp muted small">
+              Tip: Answer points auto-balance to 100 for each round, or 200 for the final round.
+            </div>
+          </section>
+        </main>
+      </div>
+    </section>
+
+    <div id="preflightPanel" class="preflightPanel" aria-hidden="true">
+      <div class="preflightDialog" role="dialog" aria-modal="true" aria-labelledby="preflightTitle">
+        <header class="preflightHeader">
+          <div>
+            <div class="editorBadge">CHECK</div>
+            <h2 id="preflightTitle" class="preflightTitle">Showtime Preflight</h2>
+          </div>
+          <button id="btnClosePreflight" class="btn tiny ghost" type="button">Close</button>
+        </header>
+
+        <div id="preflightOverall" class="preflightOverall">Checking...</div>
+
+        <div class="preflightGrid">
+          <section class="preflightRow">
+            <div>
+              <div class="label">Content</div>
+              <div id="preflightContentStatus" class="preflightStatus">Checking game questions and answers.</div>
+            </div>
+          </section>
+
+          <section class="preflightRow">
+            <div>
+              <div class="label">Audio</div>
+              <div id="preflightAudioStatus" class="preflightStatus">Test all sounds before the room fills up.</div>
+            </div>
+            <div class="row gap wrap preflightActions">
+              <button id="btnTestTheme" class="btn tiny primary" type="button">Theme</button>
+              <button id="btnTestBell" class="btn tiny primary" type="button">Correct</button>
+              <button id="btnTestBuzzer" class="btn tiny primary" type="button">Buzzer</button>
+            </div>
+          </section>
+
+          <section class="preflightRow">
+            <div>
+              <div class="label">Audience Display</div>
+              <div id="preflightAudienceStatus" class="preflightStatus">Open the audience view and confirm it mirrors the host.</div>
+            </div>
+            <button id="btnPreflightAudience" class="btn tiny ghost" type="button">Open Audience</button>
+          </section>
+
+          <section class="preflightRow">
+            <div>
+              <div class="label">Offline / PWA</div>
+              <div id="preflightOfflineStatus" class="preflightStatus">Checking service worker registration.</div>
+            </div>
+          </section>
+
+          <section class="preflightRow">
+            <div>
+              <div class="label">Display</div>
+              <div id="preflightDisplayStatus" class="preflightStatus">Checking viewport.</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div id="bigX" class="bigX" aria-hidden="true">X</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

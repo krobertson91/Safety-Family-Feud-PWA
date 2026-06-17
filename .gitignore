@@ -1,0 +1,5 @@
+Sources/
+test-results/
+*.lnk
+.DS_Store
+Thumbs.db

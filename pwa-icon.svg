@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Safety Family Feud">
+  <rect width="512" height="512" rx="104" fill="#05061a"/>
+  <circle cx="256" cy="256" r="210" fill="#0b36ff"/>
+  <circle cx="256" cy="256" r="174" fill="#07156f"/>
+  <ellipse cx="256" cy="220" rx="150" ry="82" fill="#ffd25a"/>
+  <path fill="#ffb100" d="M119 250c36 53 83 79 137 79s101-26 137-79v80c-32 55-78 83-137 83s-105-28-137-83z"/>
+  <text x="256" y="212" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="900" fill="#140a00">SAFETY</text>
+  <text x="256" y="291" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="900" fill="#ffffff">FEUD</text>
+  <path fill="none" stroke="#ffd25a" stroke-width="18" d="M105 158c44-54 94-80 151-80s107 26 151 80M105 354c44 54 94 80 151 80s107-26 151-80"/>
+</svg>

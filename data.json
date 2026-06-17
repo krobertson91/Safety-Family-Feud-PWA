@@ -1,0 +1,35 @@
+{
+  "title": "Safety Family Feud",
+  "rounds": [
+    {
+      "name": "Round 1",
+      "question": "Sample Question",
+      "answers": [
+        {
+          "text": "Sample Answer 1",
+          "points": 35
+        },
+        {
+          "text": "Sample Answer 2",
+          "points": 25
+        },
+        {
+          "text": "Sample Answer 3",
+          "points": 15
+        },
+        {
+          "text": "Sample Answer 4",
+          "points": 10
+        },
+        {
+          "text": "Sample Answer 5",
+          "points": 8
+        },
+        {
+          "text": "Sample Answer 6",
+          "points": 7
+        }
+      ]
+    }
+  ]
+}
